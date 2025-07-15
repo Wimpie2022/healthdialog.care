@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthDialog.care - Advanced Healthcare Management System</title>
+    <meta name="description" content="Transform healthcare with AI-powered diagnosis, automated care plans, and comprehensive patient management. Join thousands of healthcare providers revolutionizing patient care.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+    <style>
+        /* Hero background */
+        .hero-bg {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('landingpage.jpg');
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        
+        /* Responsive background positioning for better centering */
+        @media (max-width: 768px) {
+            .hero-bg {
+                background-position: center top;
+                background-attachment: scroll;
+            }
+        }
+
+        /* Large hero text styles */
+        .hero-title {
+            font-size: 4rem;
+            line-height: 0.9;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.7rem;
+            line-height: 1.2;
+        }
+        
+        /* Responsive text sizing */
+        @media (max-width: 1024px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+            .hero-subtitle {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Card hover effects */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Fade in animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Navigation background on scroll */
+        .nav-scrolled {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Custom button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Stats counter animation */
+        .stat-number {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* Section dividers */
+        .section-divider {
+            background: linear-gradient(90deg, transparent, #40484f, transparent);
+            height: 1px;
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans bg-slate-900" x-data="{ 
+    showMobileMenu: false, 
+    scrolled: false,
+    stats: { patients: 0, providers: 0, uptime: 0, support: 24 }
+}" x-init="
+    // Handle scroll for navigation
+    window.addEventListener('scroll', () => {
+        scrolled = window.scrollY > 50;
+    });
+    
+    // Animate stats on scroll
+    const animateStats = () => {
+        const duration = 2000;
+        const startTime = Date.now();
+        const targets = { patients: 50000, providers: 2000, uptime: 99.9, support: 24 };
+        
+        const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            stats.patients = Math.floor(targets.patients * progress);
+            stats.providers = Math.floor(targets.providers * progress);
+            stats.uptime = (targets.uptime * progress).toFixed(1);
+            stats.support = targets.support;
+            
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+        animate();
+    };
+    
+    // Intersection Observer for fade-in effects
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                if (entry.target.id === 'stats-section') {
+                    animateStats();
+                }
+            }
+        });
+    });
+    
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        :class="scrolled ? 'nav-scrolled' : 'bg-transparent'">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-18">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <a href="#home" class="flex items-center">
+                        <img src="HealthDialogLogo.svg" alt="HealthDialog.care" class="h-16 w-auto">
+                    </a>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="font-medium py-2 transition-colors hover:text-blue-600" :class="scrolled ? 'text-gray-600' : 'text-gray-200'">Home</a>
+                    <a href="#features" class="font-medium py-2 transition-colors hover:text-blue-600" :class="scrolled ? 'text-gray-600' : 'text-gray-200'">Features</a>
+                    <a href="#services" class="font-medium py-2 transition-colors hover:text-blue-600" :class="scrolled ? 'text-gray-600' : 'text-gray-200'">Services</a>
+                    <a href="#contact" class="font-medium py-2 transition-colors hover:text-blue-600" :class="scrolled ? 'text-gray-600' : 'text-gray-200'">Contact</a>
+                </div>
+                
+                <!-- Auth Buttons -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="https://www.youtube.com/watch?v=nAWhh8olE4I" target="_blank" class="btn-primary text-white px-6 my-0.5 h-10 flex items-center rounded-lg font-semibold">
+                        Watch Demo
+                    </a>
+                </div>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button @click="showMobileMenu = !showMobileMenu"
+                            class="text-gray-200 hover:text-blue-600 transition-colors">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div x-show="showMobileMenu"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 transform scale-95"
+                x-transition:enter-end="opacity-100 transform scale-100"
+                x-transition:leave="transition ease-in duration-75"
+                x-transition:leave-start="opacity-100 transform scale-100"
+                x-transition:leave-end="opacity-0 transform scale-95"
+                class="md:hidden bg-slate-800 border-t border-slate-600 shadow-lg">
+                <div class="px-4 pt-2 pb-3 space-y-2">
+                    <a href="#home" class="block py-3 text-white hover:text-blue-400 font-medium">Home</a>
+                    <a href="#features" class="block py-3 text-white hover:text-blue-400 font-medium">Features</a>
+                    <a href="#services" class="block py-3 text-white hover:text-blue-400 font-medium">Services</a>
+                    <a href="#contact" class="block py-3 text-white hover:text-blue-400 font-medium">Contact</a>
+                    <div class="pt-4 border-t border-slate-600">
+                        <a href="https://www.youtube.com/watch?v=nAWhh8olE4I" target="_blank" class="block py-3 btn-primary text-white text-center rounded-lg font-semibold">Watch Demo</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section id="home" class="hero-bg min-h-screen flex items-end relative">
+        <div class="w-full">
+            <div class="px-4 sm:px-6 lg:px-8 pb-12 max-w-7xl mx-auto">
+                <div class="max-w-4xl">
+                    <!-- Main Headline -->
+                    <h1 class="hero-title font-bold text-white mb-8">
+                        Transform Healthcare
+                        <span class="block text-white">with AI Intelligence</span>
+                    </h1>
+                    
+                    <!-- Subtitle -->
+                    <p class="hero-subtitle text-white mb-12">
+                        Empowering healthcare providers with intelligent diagnosis, automated care plans, 
+                        and comprehensive patient management through advanced artificial intelligence.
+                    </p>
+                    
+                    <!-- CTA Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-4 mb-16">
+                        <a href="https://www.youtube.com/watch?v=nAWhh8olE4I" target="_blank" class="btn-primary text-white px-8 py-4 rounded-lg font-semibold text-lg text-center">
+                            Watch Demo
+                        </a>
+                        <a href="#contact" class="btn-secondary text-gray-800 px-8 py-4 rounded-lg font-semibold text-lg text-center">
+                            Learn More
+                        </a>
+                    </div>
+                    
+                    <!-- Scroll indicator -->
+                    <div class="mb-2">
+                        <a href="#features" class="text-white hover:text-blue-200 transition-colors">
+                            <svg class="w-8 h-8 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="pt-40 pb-24 bg-slate-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="text-center mb-20 fade-in">
+                <h2 class="text-4xl sm:text-5xl font-bold text-white mb-6">
+                    Powerful Features for Modern Healthcare
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                    Our comprehensive platform combines cutting-edge AI with intuitive design 
+                    to deliver exceptional healthcare management capabilities.
+                </p>
+                <div class="section-divider mt-8 max-w-24 mx-auto"></div>
+            </div>
+            
+            <!-- Features Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1: AI Diagnosis -->
+                <div class="card-hover flex flex-1 gap-3 rounded-lg border border-slate-600 bg-slate-800 p-6 flex-col">
+                    <div class="text-blue-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M248,124a56.11,56.11,0,0,0-32-50.61V72a48,48,0,0,0-88-26.49A48,48,0,0,0,40,72v1.39a56,56,0,0,0,0,101.2V176a48,48,0,0,0,88,26.49A48,48,0,0,0,216,176v-1.41A56.09,56.09,0,0,0,248,124ZM88,208a32,32,0,0,1-31.81-28.56A55.87,55.87,0,0,0,64,180h8a8,8,0,0,0,0-16H64A40,40,0,0,1,50.67,86.27A8,8,0,0,0,56,78.73V72a32,32,0,0,1,64,0v68.26A47.8,47.8,0,0,0,88,128a8,8,0,0,0,0,16,32,32,0,0,1,0,64Zm104-44h-8a8,8,0,0,0,0,16h8a55.87,55.87,0,0,0,7.81-.56A32,32,0,1,1,168,144a8,8,0,0,0,0-16,47.8,47.8,0,0,0-32,12.26V72a32,32,0,0,1,64,0v6.73a8,8,0,0,0,5.33,7.54A40,40,0,0,1,192,164Zm16-52a8,8,0,0,1-8,8h-4a36,36,0,0,1-36-36V80a8,8,0,0,1,16,0v4a20,20,0,0,0,20,20h4A8,8,0,0,1,208,112ZM60,120H56a8,8,0,0,1,0-16h4A20,20,0,0,0,80,84V80a8,8,0,0,1,16,0v4A36,36,0,0,1,60,120Z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-white text-xl font-bold leading-tight">AI-Powered Diagnosis</h3>
+                        <p class="text-gray-400 text-base font-normal leading-normal">Enhance diagnostic accuracy with AI-driven insights and evidence-based recommendations powered by machine learning.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 2: Smart Care Plans -->
+                <div class="card-hover flex flex-1 gap-3 rounded-lg border border-slate-600 bg-slate-800 p-6 flex-col">
+                    <div class="text-green-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M224,128a8,8,0,0,1-8,8H128a8,8,0,0,1,0-16h88A8,8,0,0,1,224,128ZM128,72h88a8,8,0,0,0,0-16H128a8,8,0,0,0,0,16Zm88,112H128a8,8,0,0,0,0,16h88a8,8,0,0,0,0-16ZM82.34,42.34,56,68.69,45.66,58.34A8,8,0,0,0,34.34,69.66l16,16a8,8,0,0,0,11.32,0l32-32A8,8,0,0,0,82.34,42.34Zm0,64L56,132.69,45.66,122.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32,0l32-32a8,8,0,0,0-11.32-11.32Zm0,64L56,196.69,45.66,186.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32,0l32-32a8,8,0,0,0-11.32-11.32Z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-white text-xl font-bold leading-tight">Smart Care Plans</h3>
+                        <p class="text-gray-400 text-base font-normal leading-normal">Personalized care plans automatically generated for improved patient outcomes and streamlined treatment protocols.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 3: Patient Management -->
+                <div class="card-hover flex flex-1 gap-3 rounded-lg border border-slate-600 bg-slate-800 p-6 flex-col">
+                    <div class="text-purple-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M117.25,157.92a60,60,0,1,0-66.5,0A95.83,95.83,0,0,0,3.53,195.63a8,8,0,1,0,13.4,8.74,80,80,0,0,1,134.14,0,8,8,0,0,0,13.4-8.74A95.83,95.83,0,0,0,117.25,157.92ZM40,108a44,44,0,1,1,44,44A44.05,44.05,0,0,1,40,108Zm210.14,98.7a8,8,0,0,1-11.07-2.33A79.83,79.83,0,0,0,172,168a8,8,0,0,1,0-16,44,44,0,1,0-16.34-84.87,8,8,0,1,1-5.94-14.85,60,60,0,0,1,55.53,105.64,95.83,95.83,0,0,1,47.22,37.71A8,8,0,0,1,250.14,206.7Z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-white text-xl font-bold leading-tight">Patient Management</h3>
+                        <p class="text-gray-400 text-base font-normal leading-normal">Efficiently manage patient data, appointments, and interactions in one unified, secure platform.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 4: Analytics & Insights -->
+                <div class="card-hover flex flex-1 gap-3 rounded-lg border border-slate-600 bg-slate-800 p-6 flex-col">
+                    <div class="text-yellow-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M216,40H136V24a8,8,0,0,0-16,0V40H40A16,16,0,0,0,24,56V176a16,16,0,0,0,16,16H79.36L57.75,219a8,8,0,0,0,12.5,10l29.59-37h56.32l29.59,37a8,8,0,1,0,12.5-10l-21.61-27H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,136H40V56H216V176ZM104,120v24a8,8,0,0,1-16,0V120a8,8,0,0,1,16,0Zm32-16v40a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm32-16v56a8,8,0,0,1-16,0V88a8,8,0,0,1,16,0Z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-white text-xl font-bold leading-tight">Analytics & Insights</h3>
+                        <p class="text-gray-400 text-base font-normal leading-normal">Gain actionable insights with advanced analytics and comprehensive reporting tools for data-driven decisions.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 5: Enterprise Security -->
+                <div class="card-hover flex flex-1 gap-3 rounded-lg border border-slate-600 bg-slate-800 p-6 flex-col">
+                    <div class="text-red-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M208,40H48A16,16,0,0,0,32,56v58.78c0,89.61,75.82,119.34,91,124.39a15.53,15.53,0,0,0,10,0c15.2-5.05,91-34.78,91-124.39V56A16,16,0,0,0,208,40Zm0,74.79c0,78.42-66.35,104.62-80,109.18-13.53-4.51-80-30.69-80-109.18V56H208ZM82.34,141.66a8,8,0,0,1,11.32-11.32L112,148.68l50.34-50.34a8,8,0,0,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0Z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-white text-xl font-bold leading-tight">Enterprise Security</h3>
+                        <p class="text-gray-400 text-base font-normal leading-normal">Ensure data security and HIPAA compliance with enterprise-grade protection and encryption.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 6: Seamless Integration -->
+                <div class="card-hover flex flex-1 gap-3 rounded-lg border border-slate-600 bg-slate-800 p-6 flex-col">
+                    <div class="text-indigo-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M213.66,181.66l-32,32a8,8,0,0,1-11.32-11.32L188.69,184H48a8,8,0,0,1,0-16H188.69l-18.35-18.34a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,213.66,181.66Zm-139.32-64a8,8,0,0,0,11.32-11.32L67.31,88H208a8,8,0,0,0,0-16H67.31L85.66,53.66A8,8,0,0,0,74.34,42.34l-32,32a8,8,0,0,0,0,11.32Z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-white text-xl font-bold leading-tight">Seamless Integration</h3>
+                        <p class="text-gray-400 text-base font-normal leading-normal">Integrate with existing healthcare systems, EHRs, and third-party applications seamlessly.</p>
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-24 bg-slate-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-center">
+                <!-- Centered Content -->
+                <div class="fade-in max-w-4xl text-center">
+                    <h2 class="text-4xl sm:text-5xl font-bold text-white mb-8">
+                        Comprehensive Healthcare Solutions
+                    </h2>
+                    <p class="text-xl text-gray-300 mb-12 leading-relaxed">
+                        From initial consultation to ongoing care management, our platform 
+                        supports every aspect of modern healthcare delivery with intelligent automation.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                        <div class="flex items-start space-x-4">
+                            <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-white mb-2">Clinical Decision Support</h3>
+                                <p class="text-gray-300 leading-relaxed">Real-time diagnostic assistance and evidence-based treatment recommendations powered by advanced AI algorithms.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-white mb-2">Automated Documentation</h3>
+                                <p class="text-gray-300 leading-relaxed">AI-powered medical record generation with SNOMED coding and intelligent care plan creation.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-24 bg-slate-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl sm:text-5xl font-bold text-white mb-8">
+                    Ready to Transform Your Practice?
+                </h2>
+                <p class="text-xl text-gray-300 mb-12">
+                    Join the healthcare revolution. Contact us today to experience 
+                    the power of AI-driven healthcare management.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-6 justify-center mb-16">
+                    <a href="https://www.youtube.com/watch?v=nAWhh8olE4I" target="_blank" class="btn-primary text-white px-8 py-4 rounded-lg font-semibold text-lg">
+                        Watch Demo
+                    </a>
+                    <a href="#contact-info" class="btn-secondary text-gray-800 px-8 py-4 rounded-lg font-semibold text-lg">
+                        Contact Us
+                    </a>
+                </div>
+                
+                <!-- Contact Info -->
+                <div id="contact-info" class="flex justify-center">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Email Us</h3>
+                        <p class="text-gray-300">contact@healthdialog.care</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-600 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div class="lg:col-span-2">
+                    <div class="mb-6">
+                        <div class="mb-6">
+                            <img src="HealthDialogLogoWhite.svg" alt="HealthDialog.care" class="h-18 w-auto">
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-6 max-w-md text-lg leading-relaxed">
+                        Transforming healthcare through intelligent technology. Our AI-powered platform 
+                        empowers healthcare providers to deliver exceptional patient care with unprecedented efficiency.
+                    </p>
+                </div>
+                
+                <!-- Product Links -->
+                <div>
+                    <h3 class="text-xl font-bold mb-6">Product</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition-colors text-lg">Features</a></li>
+                        <li><a href="#services" class="text-gray-400 hover:text-white transition-colors text-lg">Services</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Legal & Support -->
+                <div>
+                    <h3 class="text-xl font-bold mb-6">Legal & Support</h3>
+                    <ul class="space-y-3">
+                        <li><a href="privacy_policy.html" class="text-gray-400 hover:text-white transition-colors text-lg">Privacy Policy</a></li>
+                        <li><a href="terms_of_service.html" class="text-gray-400 hover:text-white transition-colors text-lg">Terms of Service</a></li>
+                        <li><a href="hipaa_compliance.html" class="text-gray-400 hover:text-white transition-colors text-lg">HIPAA Compliance</a></li>
+                        <li><a href="security.html" class="text-gray-400 hover:text-white transition-colors text-lg">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-lg">
+                        &copy; 2025 HealthDialog.care. All rights reserved.
+                    </p>
+                    <p class="text-gray-400 text-lg mt-4 md:mt-0">
+                        Empowering Healthcare Through Innovation
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <button x-data="{ showScrollTop: false }" 
+            x-init="window.addEventListener('scroll', () => { showScrollTop = window.scrollY > 500 })"
+            x-show="showScrollTop" 
+            x-transition
+            @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
+            class="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 z-50 flex items-center justify-center transform hover:scale-110">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+    </button>
+
+</body>
+</html>
